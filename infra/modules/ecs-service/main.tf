@@ -1,22 +1,8 @@
+data "aws_region" "current" {}
+
 resource "aws_cloudwatch_log_group" "this" {
   name              = "/ecs/${var.project_name}-${var.environment}-${var.service_name}"
   retention_in_days = var.environment == "prod" ? 90 : 14
-}
-
-resource "aws_security_group" "service" {
-  name_prefix = "${var.project_name}-${var.environment}-${var.service_name}-"
-  vpc_id      = var.vpc_id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-${var.service_name}-sg"
-  }
 }
 
 resource "aws_security_group_rule" "from_alb" {
@@ -25,7 +11,7 @@ resource "aws_security_group_rule" "from_alb" {
   from_port                = var.container_port
   to_port                  = var.container_port
   protocol                 = "tcp"
-  security_group_id        = aws_security_group.service.id
+  security_group_id        = var.security_group_id
   source_security_group_id = var.alb_security_group_id
 }
 
@@ -36,7 +22,7 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = var.cpu
   memory                   = var.memory
   execution_role_arn       = var.execution_role_arn
-  task_role_arn             = var.task_role_arn
+  task_role_arn            = var.task_role_arn
 
   container_definitions = jsonencode([{
     name      = var.service_name
@@ -58,8 +44,6 @@ resource "aws_ecs_task_definition" "this" {
     }
   }])
 }
-
-data "aws_region" "current" {}
 
 resource "aws_lb_target_group" "this" {
   count       = var.publicly_reachable ? 1 : 0
@@ -90,9 +74,8 @@ resource "aws_ecs_service" "this" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = var.private_subnet_ids
-    security_groups = [aws_security_group.service.id]
-    # no public IP — reached only via ALB (public services) or nothing (worker)
+    subnets          = var.private_subnet_ids
+    security_groups  = [var.security_group_id]
     assign_public_ip = false
   }
 
@@ -106,6 +89,6 @@ resource "aws_ecs_service" "this" {
   }
 
   lifecycle {
-    ignore_changes = [desired_count] # autoscaling owns this after initial deploy
+    ignore_changes = [desired_count]
   }
 }

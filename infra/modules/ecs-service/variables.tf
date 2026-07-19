@@ -55,6 +55,11 @@ variable "private_subnet_ids" {
   type = list(string)
 }
 
+variable "security_group_id" {
+  description = "SG created outside this module, at the environment root, so DB/cache modules can reference it without a dependency cycle"
+  type        = string
+}
+
 variable "execution_role_arn" {
   type = string
 }
@@ -69,12 +74,10 @@ variable "env_vars" {
 }
 
 variable "secrets" {
-  description = "map of ENV_NAME => secrets manager ARN"
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }
 
-# --- Load balancer wiring (only used when publicly_reachable = true) ---
 variable "publicly_reachable" {
   type    = bool
   default = false
@@ -85,17 +88,11 @@ variable "alb_security_group_id" {
   default = null
 }
 
-variable "public_subnet_ids" {
-  type    = list(string)
-  default = []
-}
-
 variable "health_check_path" {
   type    = string
   default = "/health"
 }
 
-# --- Scaling mode: "cpu" for steady services, "queue" for the worker ---
 variable "scaling_mode" {
   type = string
   validation {
@@ -114,13 +111,7 @@ variable "sqs_queue_name" {
   default = null
 }
 
-variable "sqs_queue_arn" {
-  type    = string
-  default = null
-}
-
 variable "queue_target_backlog_per_task" {
-  description = "target messages-per-task for queue-depth scaling"
-  type        = number
-  default     = 10
+  type    = number
+  default = 10
 }
