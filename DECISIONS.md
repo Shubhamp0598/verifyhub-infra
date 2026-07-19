@@ -190,3 +190,26 @@ services this Terraform manages (ECS, RDS, S3, SQS, ElastiCache, IAM within a
 defined path, VPC/EC2 networking), assumed via GitHub OIDC rather than long-lived
 credentials. Documented here rather than fixed immediately, given time constraints;
 this is the first thing I'd lock down before treating this pipeline as production-ready.
+
+---
+
+## Issue found on real apply: ECS services failed - target group had no listener
+
+**Error:** target group ... does not have an associated load balancer.
+
+**Cause:** target groups (one per public-facing service) and the ALB were both
+created, but nothing attached them together - ECS refuses to register a service
+against a target group with no listener. This was a known gap flagged when the
+ecs-cluster module was first written, but only the HTTPS/cert piece was
+consciously deferred - the base HTTP listener was mistakenly never added at all,
+and it only surfaced once we ran a real apply, not during validate/plan.
+
+**Fix:** added infra/environments/dev/listeners.tf - one HTTP listener on :80,
+default action forwards to api-gateway (primary public entry point per the brief),
+with path-based rules routing /admin/*, /dashboard/*, /documents/* to the other 3
+services. All 4 public-facing services share one ALB rather than one each, to keep
+cost/complexity down for what's currently low-traffic internal-facing surfaces.
+
+**Still deferred, real gap:** no HTTPS/ACM cert - no real domain exists for this
+exercise. Production needs a Route53 zone, ACM cert, a :443 listener, and an
+HTTP->HTTPS redirect rule on :80.
