@@ -126,3 +126,16 @@ Organizations SCPs (Service Control Policies) enforce guardrails per account (e.
 outside us-east-1") as an outer layer that doesn't depend on any engineer
 remembering to apply it via Terraform. This is what I'd build next if this were a
 real production KYC platform handling regulated PII, given more time.
+
+---
+
+## Phase 5 — CI/CD
+
+Plan-on-PR (posted as a comment) + apply-on-merge, sequential dev → staging → prod
+via job `needs`. prod gated by a required GitHub Environment reviewer — last human
+checkpoint even though the pipeline is otherwise fully automated.
+
+Using long-lived AWS credentials as GitHub Secrets for now, not OIDC federation.
+OIDC removes the need to store any AWS credential in GitHub at all (GitHub issues a
+short-lived token, AWS trusts GitHub's OIDC provider directly) — this is what I'd
+switch to next; kept as secrets here for setup speed given the deadline.
