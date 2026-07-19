@@ -25,3 +25,18 @@ Security — for regulated KYC/PII data, account-per-environment via AWS Organiz
 would be the production-grade choice; noted as a "what I'd do next."
 
 **Region:** ap-south-1 (Mumbai).
+
+---
+
+## Phase 1 — networking + state
+
+State bucket + lock table bootstrapped once with local state, then every env's
+Terraform points at it via backend.hcl (per-env key). New env = new folder + tfvars,
+no module changes.
+
+3-tier subnets per AZ: public (ALB/NAT), private-app (ECS), private-data (RDS/cache,
+no internet route). Per-AZ NAT gateways instead of one shared NAT — costs more but an
+AZ outage doesn't take out the other AZ's egress. Could go single-NAT for dev to save
+cost; kept symmetric for now.
+
+Region: us-east-1.
