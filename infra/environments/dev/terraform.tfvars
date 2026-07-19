@@ -9,3 +9,5 @@ worker_image_uri           = "015989496267.dkr.ecr.us-east-1.amazonaws.com/verif
 document_service_image_uri = "015989496267.dkr.ecr.us-east-1.amazonaws.com/verifyhub-dev-document-service:latest"
 dashboard_image_uri        = "015989496267.dkr.ecr.us-east-1.amazonaws.com/verifyhub-dev-dashboard:latest"
 admin_console_image_uri    = "015989496267.dkr.ecr.us-east-1.amazonaws.com/verifyhub-dev-admin-console:latest"
+
+db_backup_retention_days = 1
