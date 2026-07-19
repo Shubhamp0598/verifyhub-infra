@@ -57,3 +57,28 @@ retry-looping forever. DLQ depth becomes an alarm target in Phase 6.
 
 Redis: single node in dev/staging, 2-node with automatic failover in prod. Encrypted
 at rest and in transit everywhere.
+
+---
+
+## Phase 4 — circular dependency: ECS service SGs vs DB/cache SGs
+
+**Issue found while wiring dev:** original ecs-service module created its own
+security group internally. RDS/ElastiCache modules need to allow ingress *from*
+each service's SG. But each service also needs the DB endpoint as an env var to
+even start. That's a cycle: ecs-service → database (for endpoint) → security group
+→ ecs-service (SG owned inside the module). Terraform can't resolve a cycle like
+this within one apply.
+
+**Fix:** moved security group ownership out of the ecs-service module and into the
+environment root as plain aws_security_group resources with no dependency on the
+ECS service itself. ecs-service now takes security_group_id as an input instead of
+creating one. database/cache modules reference these SG ids directly for ingress
+rules — since an SG resource has no dependency on the service running inside it,
+the cycle breaks cleanly.
+
+**Why this matters:** this is the kind of dependency graph mistake that's easy to
+introduce when building modules bottom-up (module looks fine in isolation) and only
+shows up once you wire everything together at the environment level, which is why
+this repo deliberately built and fmt/validate-checked lower-level modules first, then
+did the full environment wiring as its own explicit step, rather than writing
+everything in one pass.
