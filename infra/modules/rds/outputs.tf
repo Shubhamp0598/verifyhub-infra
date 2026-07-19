@@ -9,3 +9,7 @@ output "security_group_id" {
 output "secret_arn" {
   value = aws_secretsmanager_secret.db_credentials.arn
 }
+
+output "kms_key_arn" {
+  value = aws_kms_key.rds.arn
+}
