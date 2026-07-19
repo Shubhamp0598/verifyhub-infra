@@ -1,0 +1,23 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars.backup
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Never commit real secrets
+*.tfvars.secret
+secrets.auto.tfvars
+
+# OS / editor noise
+.DS_Store
+*.swp
+.vscode/
+.idea/
