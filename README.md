@@ -41,3 +41,16 @@ Same pattern for staging and prod — only the directory changes.
 ## Status
 
 Building in phases. Current: Phase 0 complete.
+
+## Delivery flow
+
+1. Open a PR touching infra/** — GitHub Actions runs fmt check, validate, and plan
+   for dev/staging/prod, posting each plan as a PR comment.
+2. A human reviews the plan output alongside the code diff, approves the PR.
+3. Merge to main triggers apply: dev first, then staging, then prod (each a separate
+   job, sequential via `needs`).
+4. prod requires a manual approval click (GitHub Environment protection rule) before
+   its apply runs, even post-merge — the last human checkpoint before production.
+
+No one applies from a local machine against real infrastructure; every change is
+visible in a PR diff and a plan comment before it happens.
