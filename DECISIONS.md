@@ -82,3 +82,47 @@ shows up once you wire everything together at the environment level, which is wh
 this repo deliberately built and fmt/validate-checked lower-level modules first, then
 did the full environment wiring as its own explicit step, rather than writing
 everything in one pass.
+
+---
+
+## Phase 4 — blast radius: single account now, multi-account as future work
+
+**Decision:** dev/staging/prod share one AWS account, isolated by separate VPCs,
+separate state files, and separate IAM roles per service — not separate AWS accounts.
+
+**The question behind "why not multi-account":** account-per-environment exists to
+answer one thing — if something goes wrong (a compromised credential, a bad IAM
+policy, a runaway script, a misconfigured resource), how far does the damage spread
+before it hits a hard wall? A VPC boundary stops network traffic. An IAM policy
+stops an API call. Neither stops a stolen root credential, a misissued IAM policy
+with an unintended wildcard, or a service quota / billing blast radius from one
+environment starving another. Only an AWS account boundary stops those, because
+account boundaries are enforced by AWS itself, not by anything we wrote in Terraform
+that could itself contain a bug.
+
+Concretely, in the current single-account design: a bug in the `worker` task role
+policy that's too permissive is contained by IAM, correctly, in this design. But an
+IAM boundary misconfiguration that grants dev worker access to a prod resource ARN
+by typo, or a leaked dev AWS credential with broader account-level permissions than
+intended, is not contained — it's a same-account blast radius. That's the specific
+gap multi-account closes.
+
+**Why single-account for this exercise:** the assignment scope is demonstrating
+infra design end-to-end (networking, compute, data, security, CI/CD, observability)
+within a bounded timeframe, on infrastructure with no live traffic or real user
+data. Multi-account is mostly an operational/organizational decision (AWS
+Organizations setup, cross-account IAM roles for CI/CD to assume, shared VPC or
+Transit Gateway if cross-env traffic is ever needed, centralized logging via a
+dedicated log-archive account) — real work, but it doesn't change how any individual
+service's Terraform is written. It's additive scaffolding around this repo, not a
+rewrite of it.
+
+**What changes if we go multi-account later:** each environment's `backend.hcl`
+points to a state bucket in that environment's own account. The GitHub Actions
+workflow assumes a per-environment IAM role via OIDC instead of one shared set of
+credentials — so a compromised CI token for staging cannot touch prod. AWS
+Organizations SCPs (Service Control Policies) enforce guardrails per account (e.g.
+"prod account cannot disable CloudTrail," "dev account cannot create resources
+outside us-east-1") as an outer layer that doesn't depend on any engineer
+remembering to apply it via Terraform. This is what I'd build next if this were a
+real production KYC platform handling regulated PII, given more time.
