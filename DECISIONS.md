@@ -139,3 +139,13 @@ Using long-lived AWS credentials as GitHub Secrets for now, not OIDC federation.
 OIDC removes the need to store any AWS credential in GitHub at all (GitHub issues a
 short-lived token, AWS trusts GitHub's OIDC provider directly) — this is what I'd
 switch to next; kept as secrets here for setup speed given the deadline.
+
+---
+
+## Phase 5 — CI/CD verified end-to-end
+
+Opened a real PR to confirm the pipeline, not just reviewed the YAML. Caught two
+real issues this way: unformatted tfvars files (terraform fmt -check correctly
+failed the build) and deprecated action runtime versions (bumped
+checkout/configure-aws-credentials/github-script to current majors). Confirms
+plan-on-PR with posted comments works across all three environments.
