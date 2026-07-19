@@ -42,6 +42,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
     id     = "expire-old-documents"
     status = "Enabled"
 
+    filter {}
+
     expiration {
       days = var.environment == "prod" ? 2555 : 90 # ~7yr prod retention, 90d in lower envs
     }
