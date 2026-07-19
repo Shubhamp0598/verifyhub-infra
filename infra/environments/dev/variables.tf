@@ -202,3 +202,8 @@ variable "admin_console_max_count" {
   type    = number
   default = 2
 }
+
+variable "db_backup_retention_days" {
+  type    = number
+  default = 1
+}

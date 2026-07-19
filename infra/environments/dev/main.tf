@@ -106,9 +106,10 @@ module "database" {
     aws_security_group.dashboard.id,
     aws_security_group.admin_console.id,
   ]
-  instance_class      = var.db_instance_class
-  multi_az            = var.db_multi_az
-  deletion_protection = var.db_deletion_protection
+  instance_class        = var.db_instance_class
+  multi_az              = var.db_multi_az
+  deletion_protection   = var.db_deletion_protection
+  backup_retention_days = var.db_backup_retention_days
 }
 
 module "iam" {
