@@ -149,3 +149,32 @@ real issues this way: unformatted tfvars files (terraform fmt -check correctly
 failed the build) and deprecated action runtime versions (bumped
 checkout/configure-aws-credentials/github-script to current majors). Confirms
 plan-on-PR with posted comments works across all three environments.
+
+---
+
+## Phase 6 — SLOs
+
+Three SLOs chosen to map directly to what a customer business actually feels:
+
+1. **API availability: 99.5% of requests to api-gateway return non-5xx over a
+   rolling 30-day window.** Chosen over a stricter 99.9% because this is a KYC
+   integration point, not a payment rail — a brief outage delays a verification,
+   it doesn't lose money mid-transaction. 99.5% allows ~3.6 hours/month of budget,
+   realistic for a single-region deployment without multi-region failover (which
+   isn't in scope here).
+
+2. **Verification job completion: 95% of jobs complete (pass/fail result written)
+   within 2 minutes of upload, end to end.** This is the actual product promise to
+   client businesses — "how long until I get an answer" — not an infra-internal
+   metric. Chosen from the worker's queue-depth-based autoscaling target: at
+   backlog-per-task=10 with typical processing time, 2 minutes is achievable
+   without over-provisioning workers at rest.
+
+3. **API p95 latency: under 500ms for api-gateway responses (excludes async
+   verification result, which is covered by SLO 2).** Covers the synchronous
+   "did my request get accepted" path, separate from the async processing time.
+
+**What I'd do differently with more time:** these numbers are reasoned estimates,
+not derived from real traffic data (none exists yet — this is a from-scratch
+build). In a real rollout I'd set looser initial SLOs, measure actual behavior for
+2-4 weeks, then tighten based on real p50/p95/p99 data rather than guessing upfront.
