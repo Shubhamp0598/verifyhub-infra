@@ -30,18 +30,16 @@ would be the production-grade choice; noted as a "what I'd do next."
 
 ## Phase 1 — networking + state
 
-State bucket + lock table bootstrapped once with local state, then every env's
-Terraform points at it via backend.hcl (per-env key). New env = new folder + tfvars,
-no module changes.
+## Note — S3 backend locking
+
+Using Terraform 1.10+ native S3 lockfile locking (use_lockfile = true) instead of
+the older DynamoDB-based locking. Removes a stateful dependency (no lock table to
+manage/pay for) since S3 now supports conditional writes natively.
 
 3-tier subnets per AZ: public (ALB/NAT), private-app (ECS), private-data (RDS/cache,
 no internet route). Per-AZ NAT gateways instead of one shared NAT — costs more but an
 AZ outage doesn't take out the other AZ's egress. Could go single-NAT for dev to save
 cost; kept symmetric for now.
-
-Region: us-east-1.
-
----
 
 ## Phase 3 — data layer
 
