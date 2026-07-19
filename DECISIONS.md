@@ -178,3 +178,15 @@ Three SLOs chosen to map directly to what a customer business actually feels:
 not derived from real traffic data (none exists yet — this is a from-scratch
 build). In a real rollout I'd set looser initial SLOs, measure actual behavior for
 2-4 weeks, then tighten based on real p50/p95/p99 data rather than guessing upfront.
+
+---
+
+## Note — CI/CD IAM user permissions
+
+The GitHub Actions IAM user was granted PowerUserAccess to unblock apply runs during
+development. This is broad and would not be acceptable for a real deployment
+pipeline — the correct design is a purpose-built deploy role scoped to exactly the
+services this Terraform manages (ECS, RDS, S3, SQS, ElastiCache, IAM within a
+defined path, VPC/EC2 networking), assumed via GitHub OIDC rather than long-lived
+credentials. Documented here rather than fixed immediately, given time constraints;
+this is the first thing I'd lock down before treating this pipeline as production-ready.
