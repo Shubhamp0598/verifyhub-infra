@@ -104,9 +104,10 @@ module "database" {
     aws_security_group.dashboard.id,
     aws_security_group.admin_console.id,
   ]
-  instance_class      = var.db_instance_class
-  multi_az            = var.db_multi_az
-  deletion_protection = var.db_deletion_protection
+  instance_class        = var.db_instance_class
+  multi_az              = var.db_multi_az
+  deletion_protection   = var.db_deletion_protection
+  backup_retention_days = var.db_backup_retention_days
 }
 
 module "iam" {
@@ -264,4 +265,22 @@ module "ecs_admin_console" {
   secrets = {
     DB_CREDENTIALS = module.database.secret_arn
   }
+}
+
+module "observability" {
+  source = "../../modules/observability"
+
+  project_name = var.project_name
+  environment  = var.environment
+  alarm_email  = var.alarm_email
+
+  alb_arn_suffix                      = module.ecs_cluster.alb_arn_suffix
+  api_gateway_target_group_arn_suffix = module.ecs_api_gateway.target_group_arn_suffix
+  worker_queue_name                   = module.queue.queue_name
+  dlq_name                            = "${var.project_name}-${var.environment}-verification-dlq"
+  db_instance_id                      = "${var.project_name}-${var.environment}"
+  ecs_cluster_name                    = module.ecs_cluster.cluster_name
+  ecs_service_names = [
+    "api-gateway", "worker", "document-service", "dashboard", "admin-console"
+  ]
 }
