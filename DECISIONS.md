@@ -3,7 +3,7 @@
 Key decisions, tradeoffs, assumptions, and what I'd do next — recorded as the repo
 was built, in the order things actually happened (including the mistakes).
 
-## Summary — if you only read one section
+## Summary
 
 - **Repo structure:** `infra/modules` (logic, environment-agnostic) +
   `infra/environments/{dev,staging,prod}` (data: tfvars only). A new environment is
