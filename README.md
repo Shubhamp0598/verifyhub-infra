@@ -15,7 +15,7 @@ against real AWS provider schemas - see "How to run plan" below.
 
 ## High-Level Architecture
 
-![VerifyHub Architecture](docs/architecture diagram.png)
+![VerifyHub Architecture](docs/architecture-diagram.png)
 
 ## Repo layout
 
