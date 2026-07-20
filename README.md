@@ -13,6 +13,10 @@ No live deploy is required or maintained for this exercise. Every environment is
 verified via terraform fmt -check, terraform validate, and a clean terraform plan
 against real AWS provider schemas - see "How to run plan" below.
 
+## High-Level Architecture
+
+![VerifyHub Architecture](docs/architecture diagram.png)
+
 ## Repo layout
 
 ```text
