@@ -27,14 +27,14 @@ resource "aws_security_group_rule" "cache_ingress" {
 
 resource "aws_elasticache_replication_group" "this" {
   replication_group_id = "${var.project_name}-${var.environment}"
-  description           = "verifyhub cache"
-  node_type              = var.node_type
-  num_cache_clusters      = var.environment == "prod" ? 2 : 1
-  engine                  = "redis"
-  engine_version          = "7.1"
-  port                    = 6379
+  description          = "verifyhub cache"
+  node_type            = var.node_type
+  num_cache_clusters   = var.environment == "prod" ? 2 : 1
+  engine               = "redis"
+  engine_version       = "7.1"
+  port                 = 6379
 
-  subnet_group_name = aws_elasticache_subnet_group.this.name
+  subnet_group_name  = aws_elasticache_subnet_group.this.name
   security_group_ids = [aws_security_group.cache.id]
 
   at_rest_encryption_enabled = true
