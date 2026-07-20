@@ -33,6 +33,44 @@ was built, in the order things actually happened (including the mistakes).
 
 ---
 
+## Code Reasoning Map — quick pointers for a new teammate
+
+Non-obvious decisions, mapped directly to where they live in the code, so you don't
+have to guess why something looks the way it does while reading a specific file:
+
+- **`infra/modules/ecs-service/variables.tf` — `target_group_arn` is an input, not
+  created here.** Target groups are owned by the environment root, not this module.
+  This avoids a circular dependency with the ALB listener (see "Real-apply findings"
+  above for the full story of how this was found).
+
+- **`infra/environments/*/security_groups.tf` — security groups live at the
+  environment root, not inside `ecs-service`.** Same reason: RDS/cache need to
+  reference a service's SG for ingress rules, but the service also needs the
+  database endpoint to start. Owning SGs at the root breaks that cycle.
+
+- **`infra/modules/rds/main.tf` — `skip_final_snapshot` is conditional on
+  environment.** Dev/staging don't need a snapshot preserved on destroy; prod does
+  (`environment != "prod"`).
+
+- **`infra/modules/iam/policies.tf` — each service's policy is deliberately
+  different shaped, not templated from one shared policy.** Worker gets
+  SQS+S3+KMS+Secrets because it processes documents end-to-end. Dashboard gets only
+  Secrets (DB read) because it never touches documents or the queue. This is
+  least-privilege applied literally, not just claimed - read the 5 policies
+  side-by-side to see the difference in what each service can actually do.
+
+- **`infra/modules/ecs-service/autoscaling.tf` — two different scaling policies,
+  chosen by `scaling_mode`.** `"cpu"` for steady services, `"queue"` (SQS
+  backlog-per-task) for the Worker - see Problem 3 reasoning above for why CPU alone
+  would under-react to a burst of uploads.
+
+- **`infra/global/state-backend/` — deliberately has no backend block of its own.**
+  This stack creates the S3 bucket that every other environment's state lives in;
+  it can't reference a backend that doesn't exist yet, so it uses local state,
+  applied once, manually.
+
+---
+
 ## Phase 0 — Repo structure
 
 **Decision:** Split into `infra/modules` (reusable, environment-agnostic) and
