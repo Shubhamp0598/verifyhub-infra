@@ -170,8 +170,7 @@ GitHub at all (GitHub issues a short-lived token, AWS trusts GitHub's OIDC provi
 directly) — this is what I'd switch to next; kept as secrets here for setup speed
 given the deadline.
 
-**IAM permissions (known gap):** the GitHub Actions IAM user was granted
-`PowerUserAccess` to unblock apply runs during development. This is broad and would
+**IAM permissions (known gap):** the GitHub Actions IAM user was granted `PowerUserAccess` and, separately, `IAMFullAccess` (PowerUserAccess deliberately excludes IAM actions as a guardrail against privilege escalation — adding IAMFullAccess on top knowingly bypasses that guardrail) to unblock apply runs during development. This is broad and would
 not be acceptable for a real deployment pipeline — the correct design is a
 purpose-built deploy role scoped to exactly the services this Terraform manages
 (ECS, RDS, S3, SQS, ElastiCache, IAM within a defined path, VPC/EC2 networking),
