@@ -39,9 +39,9 @@ resource "aws_appautoscaling_policy" "queue" {
   target_tracking_scaling_policy_configuration {
     customized_metric_specification {
       metrics {
-        label = "backlog-per-task"
-        id    = "backlog_per_task"
-        expression = "backlog / tasks"
+        label       = "backlog-per-task"
+        id          = "backlog_per_task"
+        expression  = "backlog / tasks"
         return_data = true
       }
       metrics {

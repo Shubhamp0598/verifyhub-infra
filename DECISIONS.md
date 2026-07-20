@@ -213,3 +213,35 @@ cost/complexity down for what's currently low-traffic internal-facing surfaces.
 **Still deferred, real gap:** no HTTPS/ACM cert - no real domain exists for this
 exercise. Production needs a Route53 zone, ACM cert, a :443 listener, and an
 HTTP->HTTPS redirect rule on :80.
+
+---
+
+## Issue found on staging apply: ECS service creation raced the ALB listener
+
+**Error:** same "target group has no associated load balancer" error dev hit
+earlier - but dev's apply had *already succeeded* with the same listeners.tf code.
+
+**Root cause:** nothing forced ECS service creation to wait for the ALB listener.
+Listener rules correctly depend on target groups (referenced by ARN), but nothing
+in the reverse direction told the ECS service to wait for the listener/rule to
+exist. Terraform parallelizes independent resources by default - dev's apply
+happened to have the listener finish first by API timing luck; staging's didn't.
+This was a latent bug in dev's "successful" apply too, just not yet triggered.
+
+**Fix:** added explicit depends_on = [aws_lb_listener.http] (or the relevant
+listener_rule) to each of the 4 public-facing ecs-service module calls, in all
+three environments. Removes reliance on timing luck.
+
+## Issue: free-tier RDS backup retention ceiling is 1 day, not 7
+
+**Error:** FreeTierRestrictionError on staging (default was 3) and would have hit
+same on prod (default was 7) - same AWS account across all three environments, so
+the free-tier ceiling applies uniformly regardless of environment.
+
+**Fix:** set db_backup_retention_days default to 1 in dev, staging, AND prod for
+now. This is a real gap versus what a production system should have (prod should
+run un-throttled retention, likely 7-35 days depending on compliance needs) - it's
+an artifact of building/testing this on a personal free-tier AWS account rather
+than a proper production-tier account. Documented here rather than hidden; the
+Terraform variable already supports a higher value, this is purely an account-tier
+constraint, not a design limitation.
