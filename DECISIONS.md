@@ -258,3 +258,31 @@ all three environments - not a code defect. terraform validate and terraform pla
 both pass cleanly for prod with 0 errors, which is what the assignment requires;
 live apply was never a requirement ("No live deploy is required" per the brief) and
 was only attempted opportunistically for dev/staging as extra verification.
+
+---
+
+## Honest gaps and caveats, re-reading the brief
+
+**Region portability:** the codebase claims "adding a new region should be cheap"
+via var.aws_region and per-environment backend.hcl/tfvars. This is true in principle
+(no hardcoded region in any module), but was never actually tested end-to-end -
+availability zones (us-east-1a/1b) are hardcoded per-environment tfvars rather than
+data-sourced, so a new region would need new AZ names supplied, not zero-touch. A
+real region rollout would use a data "aws_availability_zones" lookup instead of
+hardcoded AZ strings to make this fully automatic.
+
+**CI/CD process fidelity:** the intended flow is PR -> plan comment -> review ->
+merge -> apply. During active debugging today, several fixes were pushed directly
+to main to unblock forward progress faster, bypassing the PR review step that the
+rest of this repo argues for. This is a real inconsistency between the stated
+process and what actually happened during development - noted here rather than
+edited out of the commit history, since the assignment explicitly said commit
+history and reasoning matter more than a polished-looking end state.
+
+**Live apply:** dev and staging were applied for real against personal AWS free-tier
+credentials, beyond what the assignment required ("no live deploy is required").
+This surfaced and fixed real bugs (an ALB listener race condition, a missing
+depends_on, a free-tier RDS retention limit) that static plan/validate alone would
+not have caught - a genuine benefit - but wasn't necessary for the deliverable, and
+in hindsight the time would have been better spent on diagrams and docs polish
+earlier. All live resources have since been destroyed; only the code remains.
