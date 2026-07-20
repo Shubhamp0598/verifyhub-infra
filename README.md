@@ -15,6 +15,7 @@ against real AWS provider schemas - see "How to run plan" below.
 
 ## Repo layout
 
+\`\`\`
 infra/
   modules/               Reusable, environment-agnostic building blocks:
     networking/            VPC, 3-tier subnets (public / private-app / private-data), NAT per AZ
@@ -41,6 +42,7 @@ infra/
 docs/diagrams/               Architecture + request-flow diagrams, editable source committed
 app/                          Provided application stub scope (see app/README.md)
 DECISIONS.md                  Key decisions, tradeoffs, assumptions, honest gaps, what's next
+\`\`\`
 
 ## How one environment is wired (dev, staging, prod are identical in structure)
 
