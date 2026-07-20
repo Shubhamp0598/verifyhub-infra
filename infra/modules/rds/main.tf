@@ -54,10 +54,10 @@ resource "aws_db_instance" "this" {
   engine_version = "16.4"
   instance_class = var.instance_class
 
-  allocated_storage     = var.allocated_storage
-  storage_type           = "gp3"
-  storage_encrypted     = true
-  kms_key_id            = aws_kms_key.rds.arn
+  allocated_storage = var.allocated_storage
+  storage_type      = "gp3"
+  storage_encrypted = true
+  kms_key_id        = aws_kms_key.rds.arn
 
   db_name  = var.db_name
   username = var.master_username
@@ -65,12 +65,12 @@ resource "aws_db_instance" "this" {
 
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.db.id]
-  publicly_accessible     = false
+  publicly_accessible    = false
 
-  multi_az                = var.multi_az
-  backup_retention_period = var.backup_retention_days
-  deletion_protection     = var.deletion_protection
-  skip_final_snapshot     = var.environment != "prod"
+  multi_az                  = var.multi_az
+  backup_retention_period   = var.backup_retention_days
+  deletion_protection       = var.deletion_protection
+  skip_final_snapshot       = var.environment != "prod"
   final_snapshot_identifier = var.environment == "prod" ? "${var.project_name}-${var.environment}-final" : null
 
   performance_insights_enabled = true
