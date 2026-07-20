@@ -53,7 +53,7 @@ files, VPCs, and IAM boundaries rather than separate AWS accounts. Revisited und
 Security — for regulated KYC/PII data, account-per-environment via AWS Organizations
 would be the production-grade choice; noted as a "what I'd do next."
 
-**Region:** ap-south-1 (Mumbai).
+**Region:** us-east-1.
 
 ---
 
