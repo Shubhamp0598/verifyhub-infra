@@ -79,7 +79,7 @@ variable "api_gateway_min_count" {
 
 variable "api_gateway_max_count" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "worker_image_uri" {
@@ -137,7 +137,7 @@ variable "document_service_min_count" {
 
 variable "document_service_max_count" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "dashboard_image_uri" {
@@ -205,5 +205,5 @@ variable "alarm_email" {
 
 variable "db_backup_retention_days" {
   type    = number
-  default = 3
+  default = 1
 }

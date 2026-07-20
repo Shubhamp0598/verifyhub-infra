@@ -205,5 +205,5 @@ variable "alarm_email" {
 
 variable "db_backup_retention_days" {
   type    = number
-  default = 7
+  default = 1
 }

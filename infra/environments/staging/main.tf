@@ -18,6 +18,28 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+
+module "networking" {
+  source = "../../modules/networking"
+
+  project_name              = var.project_name
+  environment               = var.environment
+  vpc_cidr                  = var.vpc_cidr
+  azs                       = var.azs
+  public_subnet_cidrs       = var.public_subnet_cidrs
+  private_app_subnet_cidrs  = var.private_app_subnet_cidrs
+  private_data_subnet_cidrs = var.private_data_subnet_cidrs
+}
+
+module "ecs_cluster" {
+  source = "../../modules/ecs-cluster"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  vpc_id            = module.networking.vpc_id
+  public_subnet_ids = module.networking.public_subnet_ids
+}
+
 module "ecr_api_gateway" {
   source    = "../../modules/ecr"
   repo_name = "${var.project_name}-${var.environment}-api-gateway"
@@ -41,26 +63,6 @@ module "ecr_dashboard" {
 module "ecr_admin_console" {
   source    = "../../modules/ecr"
   repo_name = "${var.project_name}-${var.environment}-admin-console"
-}
-module "networking" {
-  source = "../../modules/networking"
-
-  project_name              = var.project_name
-  environment               = var.environment
-  vpc_cidr                  = var.vpc_cidr
-  azs                       = var.azs
-  public_subnet_cidrs       = var.public_subnet_cidrs
-  private_app_subnet_cidrs  = var.private_app_subnet_cidrs
-  private_data_subnet_cidrs = var.private_data_subnet_cidrs
-}
-
-module "ecs_cluster" {
-  source = "../../modules/ecs-cluster"
-
-  project_name      = var.project_name
-  environment       = var.environment
-  vpc_id            = module.networking.vpc_id
-  public_subnet_ids = module.networking.public_subnet_ids
 }
 
 module "documents" {
@@ -125,31 +127,33 @@ module "iam" {
 module "ecs_api_gateway" {
   source = "../../modules/ecs-service"
 
-  project_name          = var.project_name
-  environment           = var.environment
-  service_name          = "api-gateway"
-  cluster_id            = module.ecs_cluster.cluster_id
-  cluster_name          = module.ecs_cluster.cluster_name
-  image_uri             = var.api_gateway_image_uri
-  vpc_id                = module.networking.vpc_id
-  private_subnet_ids    = module.networking.private_app_subnet_ids
-  security_group_id     = aws_security_group.api_gateway.id
-  execution_role_arn    = module.iam.execution_role_arn
-  task_role_arn         = module.iam.task_role_arns["api-gateway"]
-  cpu                   = var.api_gateway_cpu
-  memory                = var.api_gateway_memory
-  desired_count         = var.api_gateway_desired_count
-  min_count             = var.api_gateway_min_count
-  max_count             = var.api_gateway_max_count
-  publicly_reachable    = true
-  alb_security_group_id = module.ecs_cluster.alb_security_group_id
-  scaling_mode          = "cpu"
+  project_name       = var.project_name
+  environment        = var.environment
+  service_name       = "api-gateway"
+  cluster_id         = module.ecs_cluster.cluster_id
+  cluster_name       = module.ecs_cluster.cluster_name
+  image_uri          = var.api_gateway_image_uri
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_app_subnet_ids
+  security_group_id  = aws_security_group.api_gateway.id
+  execution_role_arn = module.iam.execution_role_arn
+  task_role_arn      = module.iam.task_role_arns["api-gateway"]
+  cpu                = var.api_gateway_cpu
+  memory             = var.api_gateway_memory
+  desired_count      = var.api_gateway_desired_count
+  min_count          = var.api_gateway_min_count
+  max_count          = var.api_gateway_max_count
+  publicly_reachable = true
+  target_group_arn   = aws_lb_target_group.api_gateway.arn
+  scaling_mode       = "cpu"
   env_vars = {
     QUEUE_URL = module.queue.queue_url
   }
   secrets = {
     DB_CREDENTIALS = module.database.secret_arn
   }
+
+  depends_on = [aws_lb_listener.http]
 }
 
 module "ecs_worker" {
@@ -186,85 +190,91 @@ module "ecs_worker" {
 module "ecs_document_service" {
   source = "../../modules/ecs-service"
 
-  project_name          = var.project_name
-  environment           = var.environment
-  service_name          = "document-service"
-  cluster_id            = module.ecs_cluster.cluster_id
-  cluster_name          = module.ecs_cluster.cluster_name
-  image_uri             = var.document_service_image_uri
-  vpc_id                = module.networking.vpc_id
-  private_subnet_ids    = module.networking.private_app_subnet_ids
-  security_group_id     = aws_security_group.document_service.id
-  execution_role_arn    = module.iam.execution_role_arn
-  task_role_arn         = module.iam.task_role_arns["document-service"]
-  cpu                   = var.document_service_cpu
-  memory                = var.document_service_memory
-  desired_count         = var.document_service_desired_count
-  min_count             = var.document_service_min_count
-  max_count             = var.document_service_max_count
-  publicly_reachable    = true
-  alb_security_group_id = module.ecs_cluster.alb_security_group_id
-  scaling_mode          = "cpu"
+  project_name       = var.project_name
+  environment        = var.environment
+  service_name       = "document-service"
+  cluster_id         = module.ecs_cluster.cluster_id
+  cluster_name       = module.ecs_cluster.cluster_name
+  image_uri          = var.document_service_image_uri
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_app_subnet_ids
+  security_group_id  = aws_security_group.document_service.id
+  execution_role_arn = module.iam.execution_role_arn
+  task_role_arn      = module.iam.task_role_arns["document-service"]
+  cpu                = var.document_service_cpu
+  memory             = var.document_service_memory
+  desired_count      = var.document_service_desired_count
+  min_count          = var.document_service_min_count
+  max_count          = var.document_service_max_count
+  publicly_reachable = true
+  target_group_arn   = aws_lb_target_group.document_service.arn
+  scaling_mode       = "cpu"
   env_vars = {
     DOCUMENTS_BUCKET = module.documents.bucket_name
   }
+
+  depends_on = [aws_lb_listener_rule.document_service]
 }
 
 module "ecs_dashboard" {
   source = "../../modules/ecs-service"
 
-  project_name          = var.project_name
-  environment           = var.environment
-  service_name          = "dashboard"
-  cluster_id            = module.ecs_cluster.cluster_id
-  cluster_name          = module.ecs_cluster.cluster_name
-  image_uri             = var.dashboard_image_uri
-  vpc_id                = module.networking.vpc_id
-  private_subnet_ids    = module.networking.private_app_subnet_ids
-  security_group_id     = aws_security_group.dashboard.id
-  execution_role_arn    = module.iam.execution_role_arn
-  task_role_arn         = module.iam.task_role_arns["dashboard"]
-  cpu                   = var.dashboard_cpu
-  memory                = var.dashboard_memory
-  desired_count         = var.dashboard_desired_count
-  min_count             = var.dashboard_min_count
-  max_count             = var.dashboard_max_count
-  publicly_reachable    = true
-  alb_security_group_id = module.ecs_cluster.alb_security_group_id
-  scaling_mode          = "cpu"
+  project_name       = var.project_name
+  environment        = var.environment
+  service_name       = "dashboard"
+  cluster_id         = module.ecs_cluster.cluster_id
+  cluster_name       = module.ecs_cluster.cluster_name
+  image_uri          = var.dashboard_image_uri
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_app_subnet_ids
+  security_group_id  = aws_security_group.dashboard.id
+  execution_role_arn = module.iam.execution_role_arn
+  task_role_arn      = module.iam.task_role_arns["dashboard"]
+  cpu                = var.dashboard_cpu
+  memory             = var.dashboard_memory
+  desired_count      = var.dashboard_desired_count
+  min_count          = var.dashboard_min_count
+  max_count          = var.dashboard_max_count
+  publicly_reachable = true
+  target_group_arn   = aws_lb_target_group.dashboard.arn
+  scaling_mode       = "cpu"
   secrets = {
     DB_CREDENTIALS = module.database.secret_arn
   }
+
+  depends_on = [aws_lb_listener_rule.dashboard]
 }
 
 module "ecs_admin_console" {
   source = "../../modules/ecs-service"
 
-  project_name          = var.project_name
-  environment           = var.environment
-  service_name          = "admin-console"
-  cluster_id            = module.ecs_cluster.cluster_id
-  cluster_name          = module.ecs_cluster.cluster_name
-  image_uri             = var.admin_console_image_uri
-  vpc_id                = module.networking.vpc_id
-  private_subnet_ids    = module.networking.private_app_subnet_ids
-  security_group_id     = aws_security_group.admin_console.id
-  execution_role_arn    = module.iam.execution_role_arn
-  task_role_arn         = module.iam.task_role_arns["admin-console"]
-  cpu                   = var.admin_console_cpu
-  memory                = var.admin_console_memory
-  desired_count         = var.admin_console_desired_count
-  min_count             = var.admin_console_min_count
-  max_count             = var.admin_console_max_count
-  publicly_reachable    = true
-  alb_security_group_id = module.ecs_cluster.alb_security_group_id
-  scaling_mode          = "cpu"
+  project_name       = var.project_name
+  environment        = var.environment
+  service_name       = "admin-console"
+  cluster_id         = module.ecs_cluster.cluster_id
+  cluster_name       = module.ecs_cluster.cluster_name
+  image_uri          = var.admin_console_image_uri
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_app_subnet_ids
+  security_group_id  = aws_security_group.admin_console.id
+  execution_role_arn = module.iam.execution_role_arn
+  task_role_arn      = module.iam.task_role_arns["admin-console"]
+  cpu                = var.admin_console_cpu
+  memory             = var.admin_console_memory
+  desired_count      = var.admin_console_desired_count
+  min_count          = var.admin_console_min_count
+  max_count          = var.admin_console_max_count
+  publicly_reachable = true
+  target_group_arn   = aws_lb_target_group.admin_console.arn
+  scaling_mode       = "cpu"
   env_vars = {
     DOCUMENTS_BUCKET = module.documents.bucket_name
   }
   secrets = {
     DB_CREDENTIALS = module.database.secret_arn
   }
+
+  depends_on = [aws_lb_listener_rule.admin_console]
 }
 
 module "observability" {
@@ -275,7 +285,7 @@ module "observability" {
   alarm_email  = var.alarm_email
 
   alb_arn_suffix                      = module.ecs_cluster.alb_arn_suffix
-  api_gateway_target_group_arn_suffix = module.ecs_api_gateway.target_group_arn_suffix
+  api_gateway_target_group_arn_suffix = aws_lb_target_group.api_gateway.arn_suffix
   worker_queue_name                   = module.queue.queue_name
   dlq_name                            = "${var.project_name}-${var.environment}-verification-dlq"
   db_instance_id                      = "${var.project_name}-${var.environment}"

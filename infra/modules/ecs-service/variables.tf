@@ -56,8 +56,7 @@ variable "private_subnet_ids" {
 }
 
 variable "security_group_id" {
-  description = "SG created outside this module, at the environment root, so DB/cache modules can reference it without a dependency cycle"
-  type        = string
+  type = string
 }
 
 variable "execution_role_arn" {
@@ -83,14 +82,10 @@ variable "publicly_reachable" {
   default = false
 }
 
-variable "alb_security_group_id" {
-  type    = string
-  default = null
-}
-
-variable "health_check_path" {
-  type    = string
-  default = "/health"
+variable "target_group_arn" {
+  description = "target group ARN, created at the environment root - avoids a dependency cycle with the ALB listener"
+  type        = string
+  default     = null
 }
 
 variable "scaling_mode" {

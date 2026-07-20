@@ -5,7 +5,7 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type             = "forward"
-    target_group_arn = module.ecs_api_gateway.target_group_arn
+    target_group_arn = aws_lb_target_group.api_gateway.arn
   }
 }
 
@@ -15,7 +15,7 @@ resource "aws_lb_listener_rule" "admin_console" {
 
   action {
     type             = "forward"
-    target_group_arn = module.ecs_admin_console.target_group_arn
+    target_group_arn = aws_lb_target_group.admin_console.arn
   }
 
   condition {
@@ -31,7 +31,7 @@ resource "aws_lb_listener_rule" "dashboard" {
 
   action {
     type             = "forward"
-    target_group_arn = module.ecs_dashboard.target_group_arn
+    target_group_arn = aws_lb_target_group.dashboard.arn
   }
 
   condition {
@@ -47,7 +47,7 @@ resource "aws_lb_listener_rule" "document_service" {
 
   action {
     type             = "forward"
-    target_group_arn = module.ecs_document_service.target_group_arn
+    target_group_arn = aws_lb_target_group.document_service.arn
   }
 
   condition {
