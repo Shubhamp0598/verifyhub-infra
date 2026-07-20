@@ -15,32 +15,39 @@ against real AWS provider schemas - see "How to run plan" below.
 
 ## Repo layout
 
+```text
 infra/
-  modules/               Reusable, environment-agnostic building blocks:
-    networking/            VPC, 3-tier subnets (public / private-app / private-data), NAT per AZ
-    ecs-cluster/           ECS cluster + shared ALB
-    ecs-service/           Generic Fargate service: task def, autoscaling (cpu or queue-depth mode)
-    ecr/                   Container repo, scan-on-push, immutable tags
-    rds/                   Postgres, KMS-encrypted, Secrets Manager credentials
-    s3-document-store/     Encrypted document bucket, no public access, lifecycle expiry
-    sqs-queue/              Verification job queue + DLQ
-    elasticache/            Redis, encrypted at rest and in transit
-    iam/                    Execution role + one task role per service, least-privilege policies
-    observability/          CloudWatch alarms mapped to SLOs, SNS topic, dashboard
-  environments/
-    dev/                   Root module: wires all of the above for dev
-    staging/               Same wiring, staging-sized config
-    prod/                  Same wiring, prod-sized config (multi-AZ, deletion protection)
-  global/
-    state-backend/          One-time bootstrap: S3 bucket for state (native S3 locking, Terraform 1.10+)
+├── modules/                         Reusable, environment-agnostic building blocks
+│   ├── networking/                  VPC, 3-tier subnets (public / private-app / private-data), NAT per AZ
+│   ├── ecs-cluster/                 ECS cluster + shared ALB
+│   ├── ecs-service/                 Generic Fargate service (task definition, autoscaling)
+│   ├── ecr/                         Container repository with scan-on-push and immutable tags
+│   ├── rds/                         PostgreSQL, KMS encryption, Secrets Manager credentials
+│   ├── s3-document-store/           Encrypted document bucket with lifecycle expiry
+│   ├── sqs-queue/                   Verification queue + DLQ
+│   ├── elasticache/                 Redis, encrypted at rest and in transit
+│   ├── iam/                         Execution role + least-privilege task roles
+│   └── observability/               CloudWatch alarms, SNS topic, dashboard
+│
+├── environments/
+│   ├── dev/                         Root module for development
+│   ├── staging/                     Staging configuration
+│   └── prod/                        Production configuration (multi-AZ, deletion protection)
+│
+└── global/
+    └── state-backend/               Bootstrap S3 backend (Terraform 1.10 native locking)
+
 .github/workflows/
-  plan.yml                  Runs on every PR touching infra/**: fmt check, validate, plan,
-                             posts each environment's plan as a PR comment
-  apply.yml                 Manual-trigger only (workflow_dispatch) - live apply is not
-                             required for this exercise; kept fully codified and reviewable
-docs/diagrams/               Architecture + request-flow diagrams, editable source committed
-app/                          Provided application stub scope (see app/README.md)
-DECISIONS.md                  Key decisions, tradeoffs, assumptions, honest gaps, what's next
+├── plan.yml                         fmt, validate, plan, PR comments
+└── apply.yml                        Manual apply (workflow_dispatch)
+
+docs/
+└── diagrams/                        Architecture and request-flow diagrams
+
+app/                                 Application stub
+
+DECISIONS.md                         Design decisions, tradeoffs, assumptions, future work
+```
 
 ## How one environment is wired (dev, staging, prod are identical in structure)
 
