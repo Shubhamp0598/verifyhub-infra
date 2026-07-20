@@ -245,3 +245,16 @@ an artifact of building/testing this on a personal free-tier AWS account rather
 than a proper production-tier account. Documented here rather than hidden; the
 Terraform variable already supports a higher value, this is purely an account-tier
 constraint, not a design limitation.
+
+---
+
+## Note — live apply of prod was not completed, by design
+
+dev and staging were applied successfully as a way to stress-test the code beyond
+static validate/plan (this is how the ALB listener cycle and the depends_on bug were
+actually caught). prod's apply failed on AWS account-level quota limits (Elastic IP
+limit, RDS instance limit) tied to using a single personal free-tier AWS account for
+all three environments - not a code defect. terraform validate and terraform plan
+both pass cleanly for prod with 0 errors, which is what the assignment requires;
+live apply was never a requirement ("No live deploy is required" per the brief) and
+was only attempted opportunistically for dev/staging as extra verification.
