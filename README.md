@@ -108,7 +108,7 @@ Same three commands for staging and prod - only the directory changes, nothing e
    deploy isn't required for this exercise while keeping the actual apply pipeline
    fully codified and reviewable, exactly as it would run in a real rollout.
 
-## Security design, in one paragraph
+## Security design
 
 Three-tier subnets (public / private-app / private-data, data tier has no internet
 route at all). Least-privilege IAM: one task role per service, each scoped to only
