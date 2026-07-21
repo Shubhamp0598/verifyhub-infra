@@ -1,0 +1,155 @@
+<svg viewBox="0 0 1620 980" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#232F3E"/>
+    </marker>
+    <marker id="arrowDashed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#888888"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1620" height="980" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="40" y="40" font-size="22" font-weight="bold" fill="#232F3E">VerifyHub Request Flow — Upload to Result</text>
+  <text x="40" y="62" font-size="13" fill="#666666">Sequence of a verification request, from client upload through async processing to result availability</text>
+
+  <!-- Column headers + boxes -->
+  <!-- Client -->
+  <rect x="55" y="90" width="110" height="46" rx="6" fill="#232F3E"/>
+  <text x="110" y="118" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">Client</text>
+
+  <!-- ALB -->
+  <rect x="245" y="90" width="110" height="46" rx="6" fill="#3334B9"/>
+  <text x="300" y="112" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Application</text>
+  <text x="300" y="126" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Load Balancer</text>
+
+  <!-- API Service -->
+  <rect x="435" y="90" width="110" height="46" rx="6" fill="#D05C17"/>
+  <text x="490" y="118" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">API Service</text>
+
+  <!-- Document Service -->
+  <rect x="625" y="90" width="120" height="46" rx="6" fill="#D05C17"/>
+  <text x="685" y="112" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Document</text>
+  <text x="685" y="126" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Service</text>
+
+  <!-- SQS -->
+  <rect x="825" y="90" width="110" height="46" rx="6" fill="#BC1356"/>
+  <text x="880" y="112" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Amazon SQS</text>
+  <text x="880" y="126" font-size="11" fill="#ffffff" text-anchor="middle">Verification Queue</text>
+
+  <!-- Worker -->
+  <rect x="1015" y="90" width="110" height="46" rx="6" fill="#D05C17"/>
+  <text x="1070" y="112" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Verification</text>
+  <text x="1070" y="126" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Worker</text>
+
+  <!-- S3 -->
+  <rect x="1205" y="90" width="110" height="46" rx="6" fill="#277116"/>
+  <text x="1260" y="112" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Amazon S3</text>
+  <text x="1260" y="126" font-size="11" fill="#ffffff" text-anchor="middle">Document Storage</text>
+
+  <!-- RDS -->
+  <rect x="1395" y="90" width="110" height="46" rx="6" fill="#3334B9"/>
+  <text x="1450" y="112" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Amazon RDS</text>
+  <text x="1450" y="126" font-size="11" fill="#ffffff" text-anchor="middle">PostgreSQL</text>
+
+  <!-- Lifelines -->
+  <line x1="110" y1="136" x2="110" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="300" y1="136" x2="300" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="490" y1="136" x2="490" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="685" y1="136" x2="685" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="880" y1="136" x2="880" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="1070" y1="136" x2="1070" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="1260" y1="136" x2="1260" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="1450" y1="136" x2="1450" y2="900" stroke="#cccccc" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Step 1: Client -> ALB -->
+  <circle cx="110" cy="175" r="12" fill="#232F3E"/>
+  <text x="110" y="180" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">1</text>
+  <line x1="110" y1="175" x2="288" y2="175" stroke="#232F3E" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="200" y="168" font-size="11" fill="#232F3E" text-anchor="middle">POST /verify (ID doc + selfie, API key)</text>
+
+  <!-- Step 2: ALB -> API Service -->
+  <circle cx="300" cy="215" r="12" fill="#232F3E"/>
+  <text x="300" y="220" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">2</text>
+  <line x1="300" y1="215" x2="478" y2="215" stroke="#232F3E" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="390" y="208" font-size="11" fill="#232F3E" text-anchor="middle">route (path: /)</text>
+
+  <!-- Step 3: API Service -> Document Service -->
+  <circle cx="490" cy="255" r="12" fill="#232F3E"/>
+  <text x="490" y="260" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">3</text>
+  <line x1="490" y1="255" x2="673" y2="255" stroke="#232F3E" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="585" y="248" font-size="11" fill="#232F3E" text-anchor="middle">forward document + selfie</text>
+
+  <!-- Step 4: Document Service -> S3 -->
+  <circle cx="685" cy="295" r="12" fill="#232F3E"/>
+  <text x="685" y="300" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">4</text>
+  <path d="M 685 295 H 1260 V 295" stroke="#277116" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="970" y="288" font-size="11" fill="#277116" text-anchor="middle">store encrypted document (KMS)</text>
+
+  <!-- Step 5: API Service -> SQS -->
+  <circle cx="490" cy="335" r="12" fill="#232F3E"/>
+  <text x="490" y="340" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">5</text>
+  <path d="M 490 335 H 880 V 335" stroke="#BC1356" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="685" y="328" font-size="11" fill="#BC1356" text-anchor="middle">enqueue verification job (job_id, doc refs)</text>
+
+  <!-- Step 6: API Service -> Client (response) -->
+  <circle cx="490" cy="375" r="12" fill="#232F3E"/>
+  <text x="490" y="380" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">6</text>
+  <line x1="490" y1="375" x2="122" y2="375" stroke="#232F3E" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="300" y="368" font-size="11" fill="#232F3E" text-anchor="middle">202 Accepted — job_id returned</text>
+
+  <!-- Async boundary -->
+  <line x1="40" y1="410" x2="1580" y2="410" stroke="#999999" stroke-width="1.5" stroke-dasharray="8,4"/>
+  <rect x="660" y="396" width="290" height="28" fill="#ffffff"/>
+  <text x="805" y="415" font-size="12" fill="#999999" text-anchor="middle" font-style="italic">ASYNC BOUNDARY — client already has a response</text>
+
+  <!-- Step 7: SQS -> Worker -->
+  <circle cx="880" cy="455" r="12" fill="#232F3E"/>
+  <text x="880" y="460" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">7</text>
+  <line x1="880" y1="455" x2="1058" y2="455" stroke="#BC1356" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="970" y="448" font-size="11" fill="#BC1356" text-anchor="middle">poll / dequeue job</text>
+
+  <!-- Step 8: Worker -> S3 -->
+  <circle cx="1070" cy="495" r="12" fill="#232F3E"/>
+  <text x="1070" y="500" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">8</text>
+  <line x1="1070" y1="495" x2="1248" y2="495" stroke="#277116" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1160" y="488" font-size="11" fill="#277116" text-anchor="middle">retrieve document</text>
+
+  <!-- Step 9: processing note -->
+  <rect x="1005" y="530" width="130" height="40" rx="6" fill="#FDF2E9" stroke="#D86613" stroke-width="1"/>
+  <text x="1070" y="546" font-size="10" fill="#D86613" text-anchor="middle" font-weight="bold">9. run verification</text>
+  <text x="1070" y="560" font-size="10" fill="#D86613" text-anchor="middle" font-weight="bold">checks</text>
+
+  <!-- Step 10: Worker -> RDS -->
+  <circle cx="1070" cy="605" r="12" fill="#232F3E"/>
+  <text x="1070" y="610" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">10</text>
+  <path d="M 1070 605 H 1450 V 605" stroke="#3334B9" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="1260" y="598" font-size="11" fill="#3334B9" text-anchor="middle">write result: pass/fail + confidence score</text>
+
+  <!-- Step 11: Worker -> SQS (delete message) -->
+  <circle cx="1070" cy="645" r="12" fill="#232F3E"/>
+  <text x="1070" y="650" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">11</text>
+  <line x1="1058" y1="645" x2="892" y2="645" stroke="#BC1356" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="975" y="638" font-size="11" fill="#BC1356" text-anchor="middle">delete message (job complete)</text>
+
+  <!-- DLQ branch, dashed -->
+  <line x1="880" y1="655" x2="880" y2="690" stroke="#888888" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowDashed)"/>
+  <text x="960" y="700" font-size="10" fill="#888888" text-anchor="middle" font-style="italic">after 5 failed attempts → Dead Letter Queue</text>
+
+  <!-- Step 12: Client polls result via Dashboard/API -->
+  <circle cx="1450" cy="730" r="12" fill="#232F3E"/>
+  <text x="1450" y="735" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">12</text>
+  <path d="M 1450 730 H 110 V 730" stroke="#666666" stroke-width="2" stroke-dasharray="6,3" fill="none" marker-end="url(#arrowDashed)"/>
+  <text x="780" y="723" font-size="11" fill="#666666" text-anchor="middle">client polls result via Dashboard/API (reads from RDS)</text>
+
+  <!-- Legend -->
+  <rect x="40" y="800" width="1540" height="150" rx="8" fill="#F7F7F7" stroke="#dddddd" stroke-width="1"/>
+  <text x="60" y="828" font-size="13" font-weight="bold" fill="#232F3E">Key points this diagram is proving out</text>
+  <text x="60" y="852" font-size="11" fill="#333333">• Steps 1–6 are synchronous — the client gets a 202 Accepted with a job_id before verification even starts (this is why the Worker scales on queue depth, not request volume).</text>
+  <text x="60" y="872" font-size="11" fill="#333333">• Steps 7–11 are fully async — the Worker has no inbound route from the ALB at all; it only ever reacts to SQS.</text>
+  <text x="60" y="892" font-size="11" fill="#333333">• A failed job is retried up to 5 times before landing in the DLQ — it never loops forever or silently disappears.</text>
+  <text x="60" y="912" font-size="11" fill="#333333">• The client never polls SQS or the Worker directly — result visibility always goes through RDS, read via the Dashboard/API layer, matching the least-privilege IAM design.</text>
+  <text x="60" y="932" font-size="10" fill="#888888" font-style="italic">Matches infra/environments/*/listeners.tf, infra/modules/ecs-service (scaling_mode), and infra/modules/sqs-queue (DLQ, maxReceiveCount=5)</text>
+
+</svg>
