@@ -17,6 +17,8 @@ against real AWS provider schemas - see "How to run plan" below.
 
 ![VerifyHub Architecture](diagrams/architecture-diagram.drawio.png)
 
+![VerifyHub Architecture](diagrams/verifyhub-request-flow.svg)
+
 ## Repo layout
 
 ```text
